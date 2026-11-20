@@ -33,3 +33,6 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Gerado pelo Android Studio com JDK local; o projeto usa o JDK 17 (CI e equipe)
+gradle/gradle-daemon-jvm.properties

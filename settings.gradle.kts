@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Hornet - Desafio 01"
 include(":app")
+include(":core")

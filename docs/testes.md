@@ -33,24 +33,24 @@ Relatórios em `core/build/reports/tests/test/index.html` e `app/build/reports/t
 ## 3. Casos críticos
 | ID | Cenário | Entrada | Esperado | Tipo | Arquivo | Estado |
 |---|---|---|---|---|---|---|
-| CT-01 | Conversão °F para °C | 95, 113, 32, 212 °F | 35, 45, 0, 100 °C | Unitário | TemperaturaConversaoTest | Planejado |
-| CT-02 | Conversão de décimos | 345, 450, 0 | 34,5, 45,0 e 0,0 °C | Unitário | TemperaturaConversaoTest | Planejado |
-| CT-03 | Ida e volta | 35 °C | 95 °F | Unitário | TemperaturaConversaoTest | Planejado |
-| CT-04 | Mesma série em °F e em °C | série convertida de °C para °F e de volta | mesmos status | Unitário | CenariosDeUnidadeTest | Planejado |
-| CT-05 | Série em °F lida como °C | valores de 86 a 95 | todos INVALIDA | Unitário | CenariosDeUnidadeTest | Planejado |
-| CT-06 | Décimos lidos como °C | 345 como se fosse °C | INVALIDA | Unitário | CenariosDeUnidadeTest | Planejado |
-| CT-07 | Valores não finitos | NaN, infinitos | INVALIDA | Unitário | BaselineDetectorTest | Planejado |
-| CT-08 | Fronteiras da faixa | 0,0, -0,1, 60,0, 60,1 | SEM_BASE, INVALIDA, LIMIAR_EXCEDIDO, INVALIDA | Unitário | BaselineDetectorTest | Planejado |
-| CT-09 | Calibração | 10 leituras iguais | 10 SEM_BASE e a 11ª NORMAL | Unitário | BaselineDetectorTest | Planejado |
-| CT-10 | Limiar sem base | 45,0 na primeira leitura | LIMIAR_EXCEDIDO | Unitário | BaselineDetectorTest | Planejado |
-| CT-11 | Pico por z-score | 36,0 após 10 leituras de 30,0 | PICO, e a seguinte NORMAL | Unitário | BaselineDetectorTest | Planejado |
-| CT-12 | Fronteira de k | 32,0 e 32,1 após janela 30/31 | NORMAL e PICO | Unitário | BaselineDetectorTest | Planejado |
-| CT-13 | Queda brusca | 24,0 após 10 leituras de 30,0 | NORMAL | Unitário | BaselineDetectorTest | Planejado |
-| CT-14 | Piso do desvio | 30,2 e 30,5 após série constante | NORMAL e PICO | Unitário | BaselineDetectorTest | Planejado |
-| CT-15 | Reinício | reiniciar() | volta a SEM_BASE | Unitário | BaselineDetectorTest | Planejado |
-| CT-16 | Janela não contaminada | PICO, LIMIAR e INVALIDA intercalados | média e desvio da janela inalterados | Unitário | BaselineDetectorTest | Planejado |
+| CT-01 | Conversão °F para °C | 95, 113, 32, 212 °F | 35, 45, 0, 100 °C | Unitário | TemperaturaConversaoTest | Automatizado |
+| CT-02 | Conversão de décimos | 345, 450, 0 | 34,5, 45,0 e 0,0 °C | Unitário | TemperaturaConversaoTest | Automatizado |
+| CT-03 | Ida e volta | 35 °C | 95 °F | Unitário | TemperaturaConversaoTest | Automatizado |
+| CT-04 | Mesma série em °F e em °C | série convertida de °C para °F e de volta | mesmos status | Unitário | CenariosDeUnidadeTest | Automatizado |
+| CT-05 | Série em °F lida como °C | valores de 86 a 95 | todos INVALIDA | Unitário | CenariosDeUnidadeTest | Automatizado |
+| CT-06 | Décimos lidos como °C | 345 como se fosse °C | INVALIDA | Unitário | CenariosDeUnidadeTest | Automatizado |
+| CT-07 | Valores não finitos | NaN, infinitos | INVALIDA | Unitário | BaselineDetectorTest | Automatizado |
+| CT-08 | Fronteiras da faixa | 0,0, -0,1, 60,0, 60,1 | SEM_BASE, INVALIDA, LIMIAR_EXCEDIDO, INVALIDA | Unitário | BaselineDetectorTest | Automatizado |
+| CT-09 | Calibração | 10 leituras iguais | 10 SEM_BASE e a 11ª NORMAL | Unitário | BaselineDetectorTest | Automatizado |
+| CT-10 | Limiar sem base | 45,0 na primeira leitura | LIMIAR_EXCEDIDO | Unitário | BaselineDetectorTest | Automatizado |
+| CT-11 | Pico por z-score | 36,0 após 10 leituras de 30,0 | PICO, e a seguinte NORMAL | Unitário | BaselineDetectorTest | Automatizado |
+| CT-12 | Fronteira de k | 32,0 e 32,1 após janela 30/31 | NORMAL e PICO | Unitário | BaselineDetectorTest | Automatizado |
+| CT-13 | Queda brusca | 24,0 após 10 leituras de 30,0 | NORMAL | Unitário | BaselineDetectorTest | Automatizado |
+| CT-14 | Piso do desvio | 30,2 e 30,5 após série constante | NORMAL e PICO | Unitário | BaselineDetectorTest | Automatizado |
+| CT-15 | Reinício | reiniciar() | volta a SEM_BASE | Unitário | BaselineDetectorTest | Automatizado |
+| CT-16 | Janela não contaminada | PICO, LIMIAR e INVALIDA intercalados | média e desvio da janela inalterados | Unitário | BaselineDetectorTest | Automatizado |
 | CT-17 | Métrica de sucesso | série sintética (semente 42) | recall de pelo menos 90% e falsos positivos de no máximo 5% | Avaliação | AvaliacaoSinteticaTest | Planejado |
-| CT-18 | Determinismo | mesma semente duas vezes | séries idênticas | Unitário | SerieSinteticaTest | Planejado |
+| CT-18 | Determinismo | mesma semente duas vezes | séries idênticas | Unitário | SerieSinteticaTest | Automatizado |
 | CT-19 | Adaptador | lambda devolvendo 345, null e Int.MIN_VALUE | 34,5 °C, null e null | Unitário (app) | BatteryTemperatureSourceTest | Planejado |
 | CT-20 | App abre e mostra a temperatura real | aparelho ou emulador | valor coerente e status visível | Manual | | Planejado |
 | CT-21 | Botão "Simular pico" | tocar após a calibração | status PICO e ponto destacado no gráfico | Manual | | Planejado |

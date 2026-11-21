@@ -88,6 +88,26 @@ class BaselineDetectorTest {
     }
 
     @Test
+    fun `V-13 volta a calibrar depois de reiniciar`() {
+        preencherBaseConstante()
+        detector.reiniciar()
+
+        repeat(10) { conferirSemEstatisticas(30.0, StatusLeitura.SEM_BASE) }
+        conferirEstatisticas(avaliar(30.0), StatusLeitura.NORMAL, 30.0, 0.1, 0.0)
+    }
+
+    @Test
+    fun `V-14 preserva a base apos pico limiar e leitura invalida`() {
+        preencherBaseConstante()
+
+        conferirEstatisticas(avaliar(36.0), StatusLeitura.PICO, 30.0, 0.1, 60.0)
+        conferirSemEstatisticas(45.0, StatusLeitura.LIMIAR_EXCEDIDO)
+        conferirSemEstatisticas(Double.NaN, StatusLeitura.INVALIDA)
+
+        conferirEstatisticas(avaliar(30.0), StatusLeitura.NORMAL, 30.0, 0.1, 0.0)
+    }
+
+    @Test
     fun `usa a configuracao recebida e inclui leituras normais na janela`() {
         val detectorConfigurado = BaselineDetector(
             ConfiguracaoDetector(

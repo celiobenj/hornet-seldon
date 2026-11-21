@@ -52,6 +52,17 @@ class BaselineDetectorTest {
     }
 
     @Test
+    fun `aceita leitura em decimos no limite e detecta pico no decimo seguinte`() {
+        repeat(10) { detector.avaliar(Temperatura.deDecimosDeCelsius(300)) }
+
+        val leituraNoLimite = detector.avaliar(Temperatura.deDecimosDeCelsius(303))
+        conferirEstatisticas(leituraNoLimite, StatusLeitura.NORMAL, 30.0, 0.1, 3.0)
+
+        val leituraAcimaDoLimite = detector.avaliar(Temperatura.deDecimosDeCelsius(304))
+        conferirEstatisticas(leituraAcimaDoLimite, StatusLeitura.PICO, 30.03, 0.1, 3.7)
+    }
+
+    @Test
     fun `V-07 aplica o limiar inclusivo desde a primeira leitura`() {
         conferirSemEstatisticas(45.0, StatusLeitura.LIMIAR_EXCEDIDO)
     }

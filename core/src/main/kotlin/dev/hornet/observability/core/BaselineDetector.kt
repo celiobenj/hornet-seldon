@@ -1,5 +1,7 @@
 package dev.hornet.observability.core
 
+private const val TOLERANCIA_RELATIVA_Z_SCORE = 1e-12
+
 class BaselineDetector(
     private val configuracao: ConfiguracaoDetector = ConfiguracaoDetector(),
 ) : AnomalyDetector {
@@ -25,7 +27,9 @@ class BaselineDetector(
         val media = janela.media()
         val desvio = maxOf(janela.desvioPopulacional(), configuracao.pisoDesvioCelsius)
         val zScore = (temperatura.celsius - media) / desvio
-        val status = if (zScore > configuracao.k) StatusLeitura.PICO else StatusLeitura.NORMAL
+        // A margem relativa absorve o arredondamento de Double na fronteira z = k.
+        val tolerancia = configuracao.k * TOLERANCIA_RELATIVA_Z_SCORE
+        val status = if (zScore - configuracao.k > tolerancia) StatusLeitura.PICO else StatusLeitura.NORMAL
 
         if (status == StatusLeitura.NORMAL) janela.adicionar(temperatura.celsius)
         return Avaliacao(temperatura, status, media, desvio, zScore)

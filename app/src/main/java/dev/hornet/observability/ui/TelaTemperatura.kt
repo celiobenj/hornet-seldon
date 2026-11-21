@@ -55,6 +55,11 @@ fun TelaTemperatura(
                 contentDescription = descricaoTemperatura
             },
         )
+        GraficoTemperatura(
+            leituras = estado.historico,
+            limiarCelsius = estado.limiarCelsius,
+            modifier = Modifier.fillMaxWidth(),
+        )
         Text(
             text = leituraAtual?.let { textoStatus(it.status) } ?: "Aguardando leitura",
             color = leituraAtual?.let { corStatus(it.status) } ?: Color.Gray,

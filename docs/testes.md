@@ -10,9 +10,24 @@ Responsável: Marcelo Almeida (QA), com apoio de David Israel (QA). Este arquivo
 - **Fora desta fase:** testes instrumentados e testes de integração com o sistema Android.
 
 ## 2. Como executar
+No Linux e no macOS, use `./gradlew`. No Windows, use `.\gradlew.bat` nos mesmos comandos.
+
+Somente os testes unitários do módulo `core`, na JVM:
+```bash
+./gradlew :core:test
+```
+
+Somente os testes unitários do módulo `app`, na JVM:
+```bash
+./gradlew testDebugUnitTest
+```
+
+Comando completo usado no CI, que também gera o APK de depuração:
 ```bash
 ./gradlew assembleDebug testDebugUnitTest :core:test
 ```
+É este comando que precisa passar antes de qualquer PR. O workflow `.github/workflows/ci.yml` executa exatamente ele com Java 17 (Temurin).
+
 Relatórios em `core/build/reports/tests/test/index.html` e `app/build/reports/tests/testDebugUnitTest/index.html`. No GitHub: aba Actions, execução do PR, artefato `apk-e-relatorios`.
 
 ## 3. Casos críticos
@@ -47,6 +62,36 @@ Dica para CT-20 a CT-22 em emulador ou aparelho com depuração USB: `adb shell 
 
 ## 4. Critérios de aceitação por tarefa
 Estão nas issues do GitHub (uma por tarefa, com os critérios de aceitação). O QA confere cada critério ao revisar o PR correspondente.
+
+### 4.1 Conversões e unidades (CT-01 a CT-06)
+- CT-01: os quatro pares de Fahrenheit para Celsius (95, 113, 32 e 212) produzem 35, 45, 0 e 100 °C, com tolerância de `1e-9` em cada `Double`.
+- CT-02: 345, 450 e 0 décimos de °C produzem 34,5, 45,0 e 0,0 °C, com a mesma tolerância.
+- CT-03: 35 °C produz 95 °F, e converter esse valor de volta produz 35 °C.
+- CT-04: a série em °F, convertida para °C e depois de volta para °F, produz exatamente os mesmos status da série original em °C.
+- CT-05: todos os valores de 86 a 95 lidos como °C recebem `INVALIDA` e não entram na janela.
+- CT-06: 345 lido como °C recebe `INVALIDA`, enquanto 345 décimos viram 34,5 °C.
+
+### 4.2 Detector e janela móvel (CT-07 a CT-16)
+- Cada vetor V-01 a V-14 de `docs/contrato-core.md` produz o status e os valores de `media`, `desvio` e `zScore` esperados. Fora de `NORMAL` e `PICO`, esses três campos ficam nulos.
+- A janela recebe somente leituras `SEM_BASE` e `NORMAL`. Após `PICO`, `LIMIAR_EXCEDIDO` ou `INVALIDA`, a média e o desvio da janela continuam inalterados.
+- Uma queda brusca é classificada como `NORMAL`, e um `PICO` não altera a classificação da leitura seguinte.
+- Após `reiniciar()`, a próxima leitura volta a ser `SEM_BASE`.
+
+### 4.3 Métrica e determinismo (CT-17 e CT-18)
+- CT-17: com semente 42, recall de pelo menos 90% nos cinco picos injetados e no máximo 5% de falsos positivos entre as leituras não injetadas a partir do índice 10.
+- CT-18: duas execuções com a mesma semente produzem séries idênticas, elemento por elemento.
+
+### 4.4 Adaptador do app (CT-19)
+- `BatteryTemperatureSourceTest`: 345 vira 34,5 °C, uma leitura `null` continua `null`, e `Int.MIN_VALUE` vira `null`.
+
+### 4.5 Verificações manuais (CT-20 a CT-24)
+- CT-20: o valor exibido é coerente com a temperatura da bateria e o status aparece visível na tela.
+- CT-21: após a calibração, tocar no botão de simulação muda o status para `PICO` e destaca o ponto no gráfico.
+- CT-22: com 60 leituras, o gráfico mostra a série, a linha do limiar e os pontos anômalos.
+- CT-23: depois de girar a tela, o histórico de leituras continua presente.
+- CT-24: o leitor de tela anuncia o status em texto e o gráfico possui descrição de conteúdo.
+
+Um caso só muda de estado para Automatizado ou Manual verificado quando o comando completo do CI passa e o critério correspondente foi conferido.
 
 ## 5. Evidências
 Registradas pelo QA. Marcelo, em docs/evidencias/ci-e-testes.md: link da execução do CI verde, print do artefato baixado e resultado dos testes manuais. David, em docs/evidencias/metrica-sintetica.md: valores medidos de recall e falsos positivos e como reproduzi-los.

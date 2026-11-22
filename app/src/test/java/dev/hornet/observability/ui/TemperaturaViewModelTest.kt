@@ -53,6 +53,18 @@ class TemperaturaViewModelTest {
         assertFalse(viewModel.estado.value.indisponivel)
     }
 
+    @Test
+    fun simularPicoUsaLeituraAtualQuandoHistoricoNaoTemLeituraNormal() {
+        val viewModel = criarViewModel(fonte = FonteFalsa { Temperatura.deCelsius(36.0) })
+        viewModel.amostrar()
+
+        viewModel.simularPico()
+
+        assertEquals(2, viewModel.estado.value.historico.size)
+        assertEquals(42.0, viewModel.estado.value.atual?.temperatura?.celsius ?: 0.0, 0.0001)
+        assertEquals(StatusLeitura.PICO, viewModel.estado.value.atual?.status)
+    }
+
     private fun criarViewModel(fonte: TemperatureSource): TemperaturaViewModel =
         TemperaturaViewModel(fonte, DetectorFalso())
 

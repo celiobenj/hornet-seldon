@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.hornet.observability.core.AnomalyDetector
 import dev.hornet.observability.core.Avaliacao
+import dev.hornet.observability.core.StatusLeitura
 import dev.hornet.observability.core.Temperatura
 import dev.hornet.observability.core.TemperatureSource
 import kotlinx.coroutines.Job
@@ -46,9 +47,12 @@ class TemperaturaViewModel(
     }
 
     fun simularPico() {
-        val ultimaLeituraNormal = _estado.value.historico.lastOrNull { !it.anomala } ?: return
+        val estadoAtual = _estado.value
+        val leituraBase = estadoAtual.historico.lastOrNull {
+            it.status == StatusLeitura.NORMAL
+        } ?: estadoAtual.atual ?: return
         val temperaturaSimulada = Temperatura.deCelsius(
-            ultimaLeituraNormal.temperatura.celsius + AUMENTO_SIMULACAO_CELSIUS,
+            leituraBase.temperatura.celsius + AUMENTO_SIMULACAO_CELSIUS,
         )
         registrar(detector.avaliar(temperaturaSimulada))
     }

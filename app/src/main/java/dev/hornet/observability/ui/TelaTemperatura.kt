@@ -27,7 +27,7 @@ fun TelaTemperatura(
 ) {
     val leituraAtual = estado.atual
     val temperaturaTexto = if (estado.indisponivel || leituraAtual == null) {
-        "Indisponível"
+        "Temperatura indisponível"
     } else {
         "${"%.1f".format(leituraAtual.temperatura.celsius)} °C"
     }
@@ -61,7 +61,8 @@ fun TelaTemperatura(
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
-            text = leituraAtual?.let { textoStatus(it.status) } ?: "Aguardando leitura",
+            text = leituraAtual?.let { textoStatus(it.status) }
+                ?: if (estado.indisponivel) "Temperatura indisponível" else "Calibrando",
             color = leituraAtual?.let { corStatus(it.status) } ?: Color.Gray,
             style = MaterialTheme.typography.titleMedium,
         )
@@ -103,10 +104,10 @@ fun TelaTemperatura(
 }
 
 private fun textoStatus(status: StatusLeitura): String = when (status) {
-    StatusLeitura.SEM_BASE -> "Aguardando base"
+    StatusLeitura.SEM_BASE -> "Calibrando"
     StatusLeitura.NORMAL -> "Normal"
-    StatusLeitura.PICO -> "Pico detectado"
-    StatusLeitura.LIMIAR_EXCEDIDO -> "Limiar excedido"
+    StatusLeitura.PICO -> "Pico de temperatura"
+    StatusLeitura.LIMIAR_EXCEDIDO -> "Acima do limite de 45 °C"
     StatusLeitura.INVALIDA -> "Leitura inválida"
 }
 

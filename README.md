@@ -72,11 +72,13 @@ No Windows use `.\gradlew.bat` no lugar de `./gradlew`. O APK de depuração fic
 
 | Integrante | GitHub | Função | Resumo | Evidências |
 |---|---|---|---|---|
-| Célio Benjamim | celiobenj | Líder, Backend | (preencher no fechamento) | (links de PRs, commits e issues) |
-| Bruno Bras | Bruno-Bras | Backend | (preencher no fechamento) | (links de PRs, commits e issues) |
-| Eduardo Negreiros | ewmneng25 | Frontend | (preencher no fechamento) | (links de PRs, commits e issues) |
-| David Israel | DavidIsrael1026 | QA, Full Stack | (preencher no fechamento) | (links de PRs, commits e issues) |
-| Marcelo Almeida | Marcelo-Heitor-de-Almeida-Lira | QA | (preencher no fechamento) | (links de PRs, commits e issues) |
+| Célio Benjamim | celiobenj | Líder, Backend | Lidera a equipe e define o escopo, o contrato do `core` e o fluxo de Git. Entrega a documentação inicial, a fundação (projeto Android, módulo `core`, CI e ADR-001), a proteção das branches e as revisões dos PRs do app, do ADR-002 e das evidências. | [#18](https://github.com/celiobenj/hornet-seldon/pull/18), [#19](https://github.com/celiobenj/hornet-seldon/pull/19); revisões [#22](https://github.com/celiobenj/hornet-seldon/pull/22), [#24](https://github.com/celiobenj/hornet-seldon/pull/24), [#25](https://github.com/celiobenj/hornet-seldon/pull/25), [#26](https://github.com/celiobenj/hornet-seldon/pull/26), [#28](https://github.com/celiobenj/hornet-seldon/pull/28), [#29](https://github.com/celiobenj/hornet-seldon/pull/29), [#30](https://github.com/celiobenj/hornet-seldon/pull/30) |
+| Bruno Bras | Bruno-Bras | Backend | Implementa o detector de linha de base (janela móvel, z-score e limiar) com os 14 vetores do contrato e escreve o ADR-002. | [#23](https://github.com/celiobenj/hornet-seldon/pull/23), [#24](https://github.com/celiobenj/hornet-seldon/pull/24) |
+| Eduardo Negreiros | ewmneng25 | Frontend | Implementa a leitura da temperatura da bateria, o ViewModel, a tela e o gráfico em Canvas, e liga o detector real ao app. | [#22](https://github.com/celiobenj/hornet-seldon/pull/22), [#26](https://github.com/celiobenj/hornet-seldon/pull/26), [#28](https://github.com/celiobenj/hornet-seldon/pull/28) |
+| David Israel | DavidIsrael1026 | QA, Full Stack | Cria o gerador de série sintética, a avaliação de recall e falsos positivos e a documentação da métrica. | [#20](https://github.com/celiobenj/hornet-seldon/pull/20), [#25](https://github.com/celiobenj/hornet-seldon/pull/25), [#29](https://github.com/celiobenj/hornet-seldon/pull/29) |
+| Marcelo Almeida | Marcelo-Heitor-de-Almeida-Lira | QA | Escreve os testes de conversão e de erro de unidade, o plano de testes e o registro das evidências de CI e de testes manuais. | [#21](https://github.com/celiobenj/hornet-seldon/pull/21), [#27](https://github.com/celiobenj/hornet-seldon/pull/27), [#30](https://github.com/celiobenj/hornet-seldon/pull/30) |
+
+As tarefas de cada pessoa estão nas [issues do repositório](https://github.com/celiobenj/hornet-seldon/issues?q=is%3Aissue).
 
 ## Apresentação
 

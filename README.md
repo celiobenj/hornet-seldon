@@ -73,9 +73,11 @@ No Windows use `.\gradlew.bat` no lugar de `./gradlew`. O APK de depuração fic
 - **Métrica na série sintética** (semente 42, 200 leituras, 5 picos de +6 °C): recall de 100% (5 de 5 picos) e 2,70% de falsos positivos (5 de 185 leituras), dentro da meta de pelo menos 90% e no máximo 5%. Reprodução e limitações em [docs/evidencias/metrica-sintetica.md](docs/evidencias/metrica-sintetica.md). Os números vêm de dados sintéticos e não comprovam a eficácia em uso real.
 - **CI:** execuções na [aba Actions](https://github.com/celiobenj/hornet-seldon/actions). Cada execução anexa o APK de depuração e os relatórios de teste no artefato `apk-e-relatorios`.
 - **Testes manuais:** os casos CT-20 a CT-24 foram registrados pelo QA em [docs/evidencias/ci-e-testes.md](docs/evidencias/ci-e-testes.md), sem capturas de tela por caso.
-- **App em aparelho real:** temperatura atual, gráfico com a linha do limiar (45 °C), status e últimas leituras, durante a calibração.
+- **App em aparelho real:** temperatura atual, gráfico com a linha do limiar (45 °C), status e últimas leituras. A primeira captura mostra o app durante a calibração e a segunda mostra leituras acima do limite de 45 °C destacadas em vermelho no gráfico e na lista.
 
 ![Tela do app com temperatura, gráfico e últimas leituras](docs/evidencias/app/tela-temperatura-grafico.png)
+
+![Tela do app com leituras acima do limite de 45 °C destacadas no gráfico](docs/evidencias/app/tela-temperatura-anomalias.png)
 
 ## Contribuições
 

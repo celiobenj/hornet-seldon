@@ -1,0 +1,35 @@
+name: Android CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: chmod +x gradlew
+
+      # testDebugUnitTest roda os testes do app; :core:test roda os do core (módulo Kotlin puro)
+      - run: ./gradlew assembleDebug testDebugUnitTest :core:test
+
+      # Artefato verificável: APK debug e relatórios de teste ficam anexados à execução
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apk-e-relatorios
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            **/build/reports/tests/
+            **/build/test-results/

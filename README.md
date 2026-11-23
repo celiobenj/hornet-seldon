@@ -68,15 +68,28 @@ No Windows use `.\gradlew.bat` no lugar de `./gradlew`. O APK de depuração fic
 - Rodar localmente: `./gradlew assembleDebug testDebugUnitTest :core:test`.
 - CI: workflow em [.github/workflows/ci.yml](.github/workflows/ci.yml), executado a cada PR para `develop` e `main` e a cada push em `develop`. Gera como artefato o APK de depuração e os relatórios de teste, na aba Actions do GitHub.
 
+## Evidências
+
+- **Métrica na série sintética** (semente 42, 200 leituras, 5 picos de +6 °C): recall de 100% (5 de 5 picos) e 2,70% de falsos positivos (5 de 185 leituras), dentro da meta de pelo menos 90% e no máximo 5%. Reprodução e limitações em [docs/evidencias/metrica-sintetica.md](docs/evidencias/metrica-sintetica.md). Os números vêm de dados sintéticos e não comprovam a eficácia em uso real.
+- **CI:** execuções na [aba Actions](https://github.com/celiobenj/hornet-seldon/actions). Cada execução anexa o APK de depuração e os relatórios de teste no artefato `apk-e-relatorios`.
+- **Testes manuais:** os casos CT-20 a CT-24 foram registrados pelo QA em [docs/evidencias/ci-e-testes.md](docs/evidencias/ci-e-testes.md), sem capturas de tela por caso.
+- **App em aparelho real:** temperatura atual, gráfico com a linha do limiar (45 °C), status e últimas leituras. A primeira captura mostra o app durante a calibração e a segunda mostra leituras acima do limite de 45 °C destacadas em vermelho no gráfico e na lista.
+
+![Tela do app com temperatura, gráfico e últimas leituras](docs/evidencias/app/tela-temperatura-grafico.png)
+
+![Tela do app com leituras acima do limite de 45 °C destacadas no gráfico](docs/evidencias/app/tela-temperatura-anomalias.png)
+
 ## Contribuições
 
 | Integrante | GitHub | Função | Resumo | Evidências |
 |---|---|---|---|---|
-| Célio Benjamim | celiobenj | Líder, Backend | (preencher no fechamento) | (links de PRs, commits e issues) |
-| Bruno Bras | Bruno-Bras | Backend | (preencher no fechamento) | (links de PRs, commits e issues) |
-| Eduardo Negreiros | ewmneng25 | Frontend | (preencher no fechamento) | (links de PRs, commits e issues) |
-| David Israel | DavidIsrael1026 | QA, Full Stack | (preencher no fechamento) | (links de PRs, commits e issues) |
-| Marcelo Almeida | Marcelo-Heitor-de-Almeida-Lira | QA | (preencher no fechamento) | (links de PRs, commits e issues) |
+| Célio Benjamim | celiobenj | Líder, Backend | Lidera a equipe e define o escopo, o contrato do `core` e o fluxo de Git. Entrega a documentação inicial, a fundação (projeto Android, módulo `core`, CI e ADR-001), a proteção das branches e as revisões dos PRs do app, do ADR-002 e das evidências. | [#18](https://github.com/celiobenj/hornet-seldon/pull/18), [#19](https://github.com/celiobenj/hornet-seldon/pull/19); revisões [#22](https://github.com/celiobenj/hornet-seldon/pull/22), [#24](https://github.com/celiobenj/hornet-seldon/pull/24), [#25](https://github.com/celiobenj/hornet-seldon/pull/25), [#26](https://github.com/celiobenj/hornet-seldon/pull/26), [#28](https://github.com/celiobenj/hornet-seldon/pull/28), [#29](https://github.com/celiobenj/hornet-seldon/pull/29), [#30](https://github.com/celiobenj/hornet-seldon/pull/30) |
+| Bruno Bras | Bruno-Bras | Backend | Implementa o detector de linha de base (janela móvel, z-score e limiar) com os 14 vetores do contrato e escreve o ADR-002. | [#23](https://github.com/celiobenj/hornet-seldon/pull/23), [#24](https://github.com/celiobenj/hornet-seldon/pull/24) |
+| Eduardo Negreiros | ewmneng25 | Frontend | Implementa a leitura da temperatura da bateria, o ViewModel, a tela e o gráfico em Canvas, e liga o detector real ao app. | [#22](https://github.com/celiobenj/hornet-seldon/pull/22), [#26](https://github.com/celiobenj/hornet-seldon/pull/26), [#28](https://github.com/celiobenj/hornet-seldon/pull/28) |
+| David Israel | DavidIsrael1026 | QA, Full Stack | Cria o gerador de série sintética, a avaliação de recall e falsos positivos e a documentação da métrica. | [#20](https://github.com/celiobenj/hornet-seldon/pull/20), [#25](https://github.com/celiobenj/hornet-seldon/pull/25), [#29](https://github.com/celiobenj/hornet-seldon/pull/29) |
+| Marcelo Almeida | Marcelo-Heitor-de-Almeida-Lira | QA | Escreve os testes de conversão e de erro de unidade, o plano de testes e o registro das evidências de CI e de testes manuais. | [#21](https://github.com/celiobenj/hornet-seldon/pull/21), [#27](https://github.com/celiobenj/hornet-seldon/pull/27), [#30](https://github.com/celiobenj/hornet-seldon/pull/30) |
+
+As tarefas de cada pessoa estão nas [issues do repositório](https://github.com/celiobenj/hornet-seldon/issues?q=is%3Aissue).
 
 ## Apresentação
 

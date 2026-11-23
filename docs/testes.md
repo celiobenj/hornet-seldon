@@ -49,14 +49,14 @@ Relatórios em `core/build/reports/tests/test/index.html` e `app/build/reports/t
 | CT-14 | Piso do desvio | 30,2 e 30,5 após série constante | NORMAL e PICO | Unitário | BaselineDetectorTest | Automatizado |
 | CT-15 | Reinício | reiniciar() | volta a SEM_BASE | Unitário | BaselineDetectorTest | Automatizado |
 | CT-16 | Janela não contaminada | PICO, LIMIAR e INVALIDA intercalados | média e desvio da janela inalterados | Unitário | BaselineDetectorTest | Automatizado |
-| CT-17 | Métrica de sucesso | série sintética (semente 42) | recall de pelo menos 90% e falsos positivos de no máximo 5% | Avaliação | AvaliacaoSinteticaTest | Planejado |
+| CT-17 | Métrica de sucesso | série sintética (semente 42) | recall de pelo menos 90% e falsos positivos de no máximo 5% | Avaliação | AvaliacaoSinteticaTest | Automatizado |
 | CT-18 | Determinismo | mesma semente duas vezes | séries idênticas | Unitário | SerieSinteticaTest | Automatizado |
-| CT-19 | Adaptador | lambda devolvendo 345, null e Int.MIN_VALUE | 34,5 °C, null e null | Unitário (app) | BatteryTemperatureSourceTest | Planejado |
-| CT-20 | App abre e mostra a temperatura real | aparelho ou emulador | valor coerente e status visível | Manual | | Planejado |
-| CT-21 | Botão "Simular pico" | tocar após a calibração | status PICO e ponto destacado no gráfico | Manual | | Planejado |
-| CT-22 | Gráfico | 60 leituras | série, linha do limiar e pontos anômalos visíveis | Manual | | Planejado |
-| CT-23 | Rotação da tela | girar o aparelho | histórico mantido | Manual | | Planejado |
-| CT-24 | Acessibilidade | leitor de tela e tamanho de fonte grande | status lido em texto e gráfico com descrição | Manual | | Planejado |
+| CT-19 | Adaptador | lambda devolvendo 345, null e Int.MIN_VALUE | 34,5 °C, null e null | Unitário (app) | BatteryTemperatureSourceTest | Automatizado |
+| CT-20 | App abre e mostra a temperatura real | aparelho ou emulador | valor coerente e status visível | Manual | | Manual verificado |
+| CT-21 | Botão "Simular pico" | tocar após a calibração | status PICO e ponto destacado no gráfico | Manual | | Manual verificado |
+| CT-22 | Gráfico | 60 leituras | série, linha do limiar e pontos anômalos visíveis | Manual | | Manual verificado |
+| CT-23 | Rotação da tela | girar o aparelho | histórico mantido | Manual | | Manual verificado |
+| CT-24 | Acessibilidade | leitor de tela e tamanho de fonte grande | status lido em texto e gráfico com descrição | Manual | | Manual verificado |
 
 Dica para CT-20 a CT-22 em emulador ou aparelho com depuração USB: `adb shell dumpsys battery set temp 450` define a temperatura em décimos de °C (se o comando for aceito na versão do Android) e `adb shell dumpsys battery reset` restaura.
 

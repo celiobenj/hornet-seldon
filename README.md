@@ -18,28 +18,58 @@ Repositório da equipe **Hornet** (tema Hollow Knight), Trilha A (Inteligência 
 
 ## Arquitetura
 
-Dois módulos, em estilo hexagonal leve: `core` (Kotlin puro: regras e interfaces) e `app` (Android: leitura da bateria e interface). O `app` depende do `core`, nunca o contrário.
+Dois módulos, em estilo hexagonal leve: `core` (Kotlin puro: regras e interfaces) e `app` (Android: leitura dos sinais do aparelho e interface). O `app` depende do `core`, nunca o contrário.
+
+A classificação de thermal throttling combina quatro sinais: temperatura da bateria, frequência da CPU, uso da CPU e status térmico do Android. O `TelemetriaAndroidSource` (app) reúne os sinais em uma `AmostraTelemetria` (core). O `AnomalyDetector` avalia a temperatura e o `ThrottlingClassifier` decide o estado final com todos os sinais. O uso da CPU é o do próprio processo do app (plano B), porque o Android não permite ler o uso do sistema inteiro sem privilégios.
 
 ```mermaid
 flowchart LR
+  subgraph android["Fontes do Android"]
+    F1["Intent da bateria"]
+    F2["cpufreq no sysfs"]
+    F3["Process.getElapsedCpuTime"]
+    F4["PowerManager.getCurrentThermalStatus"]
+  end
   subgraph app["Módulo app (Android)"]
-    BS["BatteryTemperatureSource (adaptador)"]
+    BS["BatteryTemperatureSource"]
+    FS["FrequenciaCpuSource"]
+    US["UsoCpuSource (uso do processo, plano B)"]
+    ST["StatusTermicoSource"]
+    TA["TelemetriaAndroidSource (adaptador)"]
     VM["TemperaturaViewModel"]
     UI["Tela e gráfico (Compose)"]
   end
   subgraph core["Módulo core (Kotlin puro)"]
-    TS(["TemperatureSource (porta de saída)"])
+    TE(["TemperatureSource (porta de saída)"])
+    TS(["TelemetriaSource (porta de saída)"])
+    AM["AmostraTelemetria"]
     AD(["AnomalyDetector (porta de entrada)"])
     BD["BaselineDetector"]
+    TC(["ThrottlingClassifier (porta de entrada)"])
+    CT["ClassificadorThrottling"]
+    RT["ResultadoThrottling (estado e motivo)"]
   end
-  BS -- implementa --> TS
+  F1 --> BS
+  F2 --> FS
+  F3 --> US
+  F4 --> ST
+  BS -- implementa --> TE
+  TA -- implementa --> TS
+  TA -- usa --> BS
+  TA -- usa --> FS
+  TA -- usa --> US
+  TA -- usa --> ST
+  TA -- monta --> AM
   BD -- implementa --> AD
-  VM -- lê --> TS
-  VM -- avalia --> AD
-  VM --> UI
+  CT -- implementa --> TC
+  CT -- devolve --> RT
+  VM -- lê com lerAtual --> TS
+  VM -- avalia a temperatura --> AD
+  VM -- classifica amostra e avaliação --> TC
+  VM -- estado da tela --> UI
 ```
 
-Detalhes em [docs/arquitetura.md](docs/arquitetura.md). Decisões registradas em [docs/decisoes/](docs/decisoes/): ADR-001 (módulos core e app) e ADR-002 (linha de base com z-score e limiar).
+Detalhes em [docs/arquitetura.md](docs/arquitetura.md). Decisões registradas em [docs/decisoes/](docs/decisoes/): ADR-001 (módulos core e app) e ADR-002 (linha de base com z-score e limiar). As regras do classificador estão em [docs/classificador-throttling.md](docs/classificador-throttling.md).
 
 ## Como executar
 

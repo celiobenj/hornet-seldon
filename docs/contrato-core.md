@@ -177,3 +177,58 @@ Valor de referência: uma implementação independente das regras da seção 2, 
 ## 5. Como o app usa o contrato
 
 O `TemperaturaViewModel` recebe um `TemperatureSource` e um `AnomalyDetector` no construtor. A cada 5 segundos chama `fonte.lerAtual()`, passa o resultado a `detector.avaliar(...)` e guarda as últimas 60 `Avaliacao` no estado da tela. O botão "Simular pico" chama `detector.avaliar(Temperatura.deCelsius(ultimaLeituraNormal + 6.0))`.
+
+## 6. Contrato v2: telemetria e classificador de throttling
+
+A v2 acrescenta ao `core` os sinais que a temperatura sozinha não mostra: frequência da CPU, uso da CPU e status térmico do Android. O contrato da v1 (seções 1 a 5) não muda: `Temperatura`, `Avaliacao`, `AnomalyDetector`, `BaselineDetector` e `TemperatureSource` continuam como estão. Os arquivos novos ficam em `core/src/main/kotlin/dev/hornet/observability/core/` e o `core` continua sem depender do Android. As regras de decisão estão em [classificador-throttling.md](classificador-throttling.md).
+
+### AmostraTelemetria.kt
+```kotlin
+data class AmostraTelemetria(
+    val instanteMs: Long,
+    val temperaturaBateria: Temperatura,
+    val frequenciaAtualKhz: Long? = null,   // scaling_cur_freq
+    val frequenciaMaximaKhz: Long? = null,  // cpuinfo_max_freq (máximo de fábrica)
+    val tetoFrequenciaKhz: Long? = null,    // scaling_max_freq (teto imposto pelo sistema)
+    val usoCpuPercentual: Double? = null,   // 0 a 100
+    val statusTermico: Int? = null,         // PowerManager: 0 (NONE) a 6 (SHUTDOWN)
+) {
+    fun razaoFrequencia(): Double?   // atual / máximo
+    fun razaoTeto(): Double?         // teto / máximo
+    fun usoCpuValido(): Double?
+    fun statusTermicoValido(): Int?
+}
+```
+
+### EstadoThrottling.kt, ResultadoThrottling.kt, TelemetriaSource.kt e ThrottlingClassifier.kt
+```kotlin
+enum class EstadoThrottling { INDETERMINADO, NORMAL, AQUECENDO, THROTTLING_PROVAVEL, THROTTLING_CONFIRMADO }
+
+data class ResultadoThrottling(val estado: EstadoThrottling, val motivo: String)
+
+interface TelemetriaSource {
+    /** Amostra atual, ou null se a temperatura da bateria estiver indisponível. */
+    fun lerAtual(): AmostraTelemetria?
+}
+
+interface ThrottlingClassifier {
+    fun classificar(amostra: AmostraTelemetria, avaliacaoTemperatura: Avaliacao): ResultadoThrottling
+}
+```
+`TelemetriaSource.lerAtual()` segue o mesmo padrão de `TemperatureSource.lerAtual()`. A porta de entrada `ThrottlingClassifier` não guarda estado: cada chamada classifica uma amostra, usando a `Avaliacao` que o `AnomalyDetector` produziu para a temperatura dessa mesma amostra. A implementação `ClassificadorThrottling` e a `ConfiguracaoThrottling` ficam com o Bruno (issue B2).
+
+### Regras dos campos
+- **Sinal ausente:** campo `null`. O classificador ignora a regra que depende dele e nunca lança exceção. Só a temperatura é obrigatória.
+- **Frequências em kHz.** Uma frequência nula, zero ou negativa conta como ausente. Sem a frequência máxima, as duas razões ficam ausentes. Se faltar apenas a frequência atual ou o teto, a outra razão ainda é calculada.
+- **Razões:** divisão em ponto flutuante, sem arredondar e sem limitar a 1. Um teto maior que o máximo dá razão acima de 1. Quem decide o que é "teto imposto" é o classificador, com `razaoTetoImposto`, e não o contrato.
+- **Uso da CPU:** `usoCpuValido()` devolve o valor só se for finito e estiver de 0 a 100, inclusive. 0% é válido. NaN, infinito e valores fora da faixa contam como ausentes.
+- **Status térmico:** `statusTermicoValido()` devolve o código só se estiver de 0 a 6, inclusive. O código 0 é válido. Fora da faixa conta como ausente.
+
+### Núcleos com máximos diferentes
+Em CPUs com grupos de núcleos de máximos diferentes, `frequenciaAtualKhz`, `frequenciaMaximaKhz` e `tetoFrequenciaKhz` pertencem ao mesmo grupo (`policy`): o adaptador escolhe o grupo de maior razão atual/máximo e informa os três valores desse grupo. Assim as razões ficam coerentes. Exemplo do Moto G60 em `docs/validacao/frequencia-e-status-termico.md`: `policy0` com máximo de 1804,8 MHz e `policy6` com 2304,0 MHz.
+
+### Origem do uso da CPU
+`usoCpuPercentual` é o uso do sistema quando o aparelho permite lê-lo. Em aplicativos comuns, `/proc/stat` e `/proc/loadavg` falharam com `EACCES` na validação (`docs/validacao/uso-cpu.md`), então o plano B usa o uso do próprio processo, medido com `Process.getElapsedCpuTime()`. Esse valor só reflete a carga gerada pelo próprio app (por exemplo, o botão de gerar carga) e não a carga de outros aplicativos. O adaptador devolve `null` na primeira leitura, porque o cálculo precisa de duas amostras.
+
+### Como o app usa o contrato v2
+Um adaptador `TelemetriaSource` monta a `AmostraTelemetria` a partir da bateria, do `cpufreq`, do uso da CPU e do `PowerManager`. A cada 5 segundos, o ViewModel chama `lerAtual()`, avalia a temperatura com o `AnomalyDetector`, passa a amostra e a `Avaliacao` ao `ThrottlingClassifier` e publica o resultado para a tela.

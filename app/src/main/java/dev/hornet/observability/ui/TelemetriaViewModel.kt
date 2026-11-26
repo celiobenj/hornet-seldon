@@ -2,6 +2,7 @@ package dev.hornet.observability.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.hornet.observability.carga.GeradorDeCarga
 import dev.hornet.observability.core.AmostraTelemetria
 import dev.hornet.observability.core.AnomalyDetector
 import dev.hornet.observability.core.Avaliacao
@@ -48,6 +49,16 @@ class TelemetriaViewModel(
     // O detector guarda a janela de leituras, então só uma thread pode usá-lo por vez.
     private val trava = Any()
     private var tarefaAmostragem: Job? = null
+
+    // Criado só quando usado. Como vive no viewModelScope, a carga para se o ViewModel for encerrado.
+    private val gerador by lazy { GeradorDeCarga(viewModelScope) }
+
+    /** Verdadeiro enquanto o gerador de carga estiver ocupando a CPU. */
+    val cargaAtiva: StateFlow<Boolean> by lazy { gerador.ativo }
+
+    fun gerarCarga() = gerador.iniciar()
+
+    fun pararCarga() = gerador.parar()
 
     fun iniciar() {
         if (tarefaAmostragem?.isActive == true) return

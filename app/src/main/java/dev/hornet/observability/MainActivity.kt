@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -84,6 +85,7 @@ private fun TelaPrincipal(modifier: Modifier = Modifier) {
     }
     val viewModel: TelemetriaViewModel = viewModel(factory = fabrica)
     val estado by viewModel.estado.collectAsStateWithLifecycle()
+    val cargaAtiva by viewModel.cargaAtiva.collectAsStateWithLifecycle()
 
     LaunchedEffect(viewModel) {
         viewModel.iniciar()
@@ -91,7 +93,10 @@ private fun TelaPrincipal(modifier: Modifier = Modifier) {
 
     ConteudoPrincipal(
         estado = estado,
+        cargaAtiva = cargaAtiva,
         onSimularPico = viewModel::simularPico,
+        onGerarCarga = viewModel::gerarCarga,
+        onPararCarga = viewModel::pararCarga,
         modifier = modifier,
     )
 }
@@ -99,7 +104,10 @@ private fun TelaPrincipal(modifier: Modifier = Modifier) {
 @Composable
 private fun ConteudoPrincipal(
     estado: TelemetriaUiState,
+    cargaAtiva: Boolean,
     onSimularPico: () -> Unit,
+    onGerarCarga: () -> Unit,
+    onPararCarga: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val estadoTela = remember(estado) { mapearParaTela(estado) }
@@ -117,6 +125,25 @@ private fun ConteudoPrincipal(
                     text = "Simular pico",
                     style = MaterialTheme.typography.labelLarge,
                 )
+            }
+            if (cargaAtiva) {
+                OutlinedButton(onClick = onPararCarga) {
+                    Text(
+                        text = "Parar carga",
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
+                Text(
+                    text = "Carga ativa: a CPU está ocupada de propósito por até 60 s.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            } else {
+                Button(onClick = onGerarCarga) {
+                    Text(
+                        text = "Gerar carga por 60 s",
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
             }
         },
     )
@@ -144,7 +171,10 @@ private fun ConteudoPrincipalPreview() {
                     avaliacao,
                 ),
             ),
+            cargaAtiva = false,
             onSimularPico = {},
+            onGerarCarga = {},
+            onPararCarga = {},
         )
     }
 }

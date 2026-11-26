@@ -19,6 +19,8 @@ Kotlin, Jetpack Compose, Gradle (Kotlin DSL), JUnit 4, Java 17 (Temurin). Apenas
 ## Arquitetura em uma frase
 Hexagonal leve: o `core` define as regras e as interfaces (portas `AnomalyDetector` e `TemperatureSource`); o `app` implementa a leitura da bateria (adaptador) e a interface. O `app` depende do `core`; o `core` nunca depende do `app` nem de qualquer coisa do Android.
 
+Na fase 2 (25/11 a 27/11) o `core` ganha o contrato v2: `AmostraTelemetria`, `EstadoThrottling`, `ResultadoThrottling` e as portas `TelemetriaSource` e `ThrottlingClassifier` (frequência da CPU, uso da CPU e status térmico, além da temperatura). O `app` implementa a `TelemetriaSource` com adaptadores do Android. Detalhes em `docs/contrato-core.md` (seção 6), `docs/classificador-throttling.md` e na issue fixada "Guia da fase 2" (#49).
+
 ## Regras do detector (resumo; detalhes e vetores de teste em docs/contrato-core.md)
 Ordem de decisão para cada leitura (parâmetros padrão: janela N = 10, k = 3, piso do desvio 0,1 °C, limiar 45 °C, faixa válida 0 a 60 °C):
 1. Valor não finito (NaN, infinito) ou fora da faixa: INVALIDA. Não entra na janela.
@@ -59,6 +61,17 @@ Edite apenas os arquivos da sua posse. Se precisar mudar um arquivo de outra pes
 | Eduardo (Frontend) | ewmneng25 | `app/` inteiro, `gradle/libs.versions.toml` (depois da fundação) e `docs/evidencias/app/` |
 | David (QA, Full Stack) | DavidIsrael1026 | em `core/src/test/kotlin/dev/hornet/observability/core/`: `SerieSintetica.kt`, `SerieSinteticaTest.kt` e `AvaliacaoSinteticaTest.kt`; além de `docs/evidencias/metrica-sintetica.md` |
 | Marcelo (QA) | Marcelo-Heitor-de-Almeida-Lira | em `core/src/test/kotlin/dev/hornet/observability/core/`: `TemperaturaConversaoTest.kt` e `CenariosDeUnidadeTest.kt`; além de `docs/testes.md` e `docs/evidencias/ci-e-testes.md` |
+
+### Posse de arquivos na fase 2 (25/11 a 27/11)
+Vale além da tabela acima. Arquivos novos, por pessoa:
+
+| Pessoa | Arquivos novos da fase 2 |
+|---|---|
+| Célio | em `core/src/main/kotlin/dev/hornet/observability/core/`: `AmostraTelemetria.kt`, `EstadoThrottling.kt`, `ResultadoThrottling.kt`, `TelemetriaSource.kt` e `ThrottlingClassifier.kt`; em `core/src/test/kotlin/dev/hornet/observability/core/`: `AmostraTelemetriaTest.kt`; além de `README.md`, `docs/arquitetura.md`, `docs/escopo.md` e `docs/contrato-core.md` |
+| Bruno | em `core/src/main/kotlin/dev/hornet/observability/core/`: `ClassificadorThrottling.kt` e `ConfiguracaoThrottling.kt`; em `core/src/test/kotlin/dev/hornet/observability/core/`: `ClassificadorThrottlingTest.kt`; além de `docs/classificador-throttling.md` |
+| David | em `app/src/main/java/dev/hornet/observability/data/`: `FrequenciaCpuSource.kt`, `UsoCpuSource.kt`, `StatusTermicoSource.kt` e `TelemetriaAndroidSource.kt`; em `app/src/test/java/dev/hornet/observability/data/`: os testes novos dos leitores; além de `docs/validacao/frequencia-e-status-termico.md` |
+| Eduardo | o restante de `app/` (inclui `ui/`, o ViewModel e `MainActivity.kt`) e `docs/evidencias/app/` |
+| Marcelo | em `core/src/test/kotlin/dev/hornet/observability/core/`: `ClassificadorThrottlingCenariosTest.kt`; além de `docs/validacao/uso-cpu.md`, `docs/testes.md`, `docs/evidencias/ci-e-testes.md`, `docs/evidencias/telemetria-aparelho.md` e `docs/evidencias/aparelho/` |
 
 ## Definição de pronto
 - O projeto compila e o comando de testes passa.

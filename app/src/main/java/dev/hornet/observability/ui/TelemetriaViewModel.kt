@@ -27,6 +27,7 @@ data class TelemetriaUiState(
     val avaliacao: Avaliacao? = null,
     val resultado: ResultadoThrottling? = null,
     val historico: List<Avaliacao> = emptyList(),
+    val historicoRazaoFrequencia: List<Double?> = emptyList(),
     val indisponivel: Boolean = false,
 )
 
@@ -101,11 +102,14 @@ class TelemetriaViewModel(
     private fun registrar(amostra: AmostraTelemetria, avaliacao: Avaliacao) {
         val resultado = classificador.classificar(amostra, avaliacao)
         val historico = (_estado.value.historico + avaliacao).takeLast(LIMITE_HISTORICO)
+        val historicoRazao = (_estado.value.historicoRazaoFrequencia + amostra.razaoFrequencia())
+            .takeLast(LIMITE_HISTORICO)
         _estado.value = _estado.value.copy(
             amostra = amostra,
             avaliacao = avaliacao,
             resultado = resultado,
             historico = historico,
+            historicoRazaoFrequencia = historicoRazao,
             indisponivel = false,
         )
     }

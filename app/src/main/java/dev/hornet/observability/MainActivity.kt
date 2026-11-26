@@ -106,6 +106,7 @@ private fun ConteudoPrincipal(
     TelaMultiSinal(
         estado = estadoTela,
         historico = estado.historico,
+        historicoRazaoFrequencia = estado.historicoRazaoFrequencia,
         modifier = modifier,
         acoes = {
             Button(

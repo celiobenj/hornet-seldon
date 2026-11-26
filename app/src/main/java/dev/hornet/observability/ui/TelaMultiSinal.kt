@@ -38,6 +38,7 @@ fun TelaMultiSinal(
     historico: List<Avaliacao>,
     modifier: Modifier = Modifier,
     limiarCelsius: Double = 45.0,
+    historicoRazaoFrequencia: List<Double?> = emptyList(),
     acoes: @Composable () -> Unit = {},
 ) {
     Column(
@@ -69,6 +70,15 @@ fun TelaMultiSinal(
         GraficoTemperatura(
             leituras = historico,
             limiarCelsius = limiarCelsius,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+            text = "Frequência da CPU (% do máximo)",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 8.dp),
+        )
+        GraficoRazaoFrequencia(
+            razoes = historicoRazaoFrequencia,
             modifier = Modifier.fillMaxWidth(),
         )
         acoes()

@@ -30,6 +30,7 @@ import dev.hornet.observability.core.Temperatura
  * Tela da v2: um card por sinal, o destaque do estado do throttling e o gráfico de temperatura.
  *
  * O histórico do gráfico vem separado do modelo porque o GraficoTemperatura usa a Avaliacao do core.
+ * acoes recebe os botões de teste (por exemplo "Simular pico"), mostrados no fim da tela.
  */
 @Composable
 fun TelaMultiSinal(
@@ -37,6 +38,7 @@ fun TelaMultiSinal(
     historico: List<Avaliacao>,
     modifier: Modifier = Modifier,
     limiarCelsius: Double = 45.0,
+    acoes: @Composable () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -69,6 +71,7 @@ fun TelaMultiSinal(
             limiarCelsius = limiarCelsius,
             modifier = Modifier.fillMaxWidth(),
         )
+        acoes()
     }
 }
 

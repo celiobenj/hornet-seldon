@@ -1,0 +1,118 @@
+package dev.hornet.observability.ui
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dev.hornet.observability.core.AmostraTelemetria
+import dev.hornet.observability.core.AnomalyDetector
+import dev.hornet.observability.core.Avaliacao
+import dev.hornet.observability.core.ResultadoThrottling
+import dev.hornet.observability.core.StatusLeitura
+import dev.hornet.observability.core.Temperatura
+import dev.hornet.observability.core.TelemetriaSource
+import dev.hornet.observability.core.ThrottlingClassifier
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+/** O que o ViewModel publica: os dados do core, ainda sem formatação para a tela. */
+data class TelemetriaUiState(
+    val amostra: AmostraTelemetria? = null,
+    val avaliacao: Avaliacao? = null,
+    val resultado: ResultadoThrottling? = null,
+    val historico: List<Avaliacao> = emptyList(),
+    val indisponivel: Boolean = false,
+)
+
+/**
+ * A cada 5 segundos: lê a amostra, avalia a temperatura com o detector, classifica a amostra
+ * e publica o resultado. A leitura roda em thread de IO para não travar a tela.
+ */
+class TelemetriaViewModel(
+    private val fonte: TelemetriaSource,
+    private val detector: AnomalyDetector,
+    private val classificador: ThrottlingClassifier,
+    private val despachanteIo: CoroutineDispatcher = Dispatchers.IO,
+) : ViewModel() {
+
+    private val _estado = MutableStateFlow(TelemetriaUiState())
+    val estado: StateFlow<TelemetriaUiState> = _estado.asStateFlow()
+
+    // O detector guarda a janela de leituras, então só uma thread pode usá-lo por vez.
+    private val trava = Any()
+    private var tarefaAmostragem: Job? = null
+
+    fun iniciar() {
+        if (tarefaAmostragem?.isActive == true) return
+
+        tarefaAmostragem = viewModelScope.launch {
+            while (isActive) {
+                withContext(despachanteIo) { amostrar() }
+                delay(INTERVALO_AMOSTRAGEM_MS)
+            }
+        }
+    }
+
+    /** Faz um ciclo completo: ler, avaliar, classificar e publicar. */
+    fun amostrar() = synchronized(trava) {
+        val amostra = try {
+            fonte.lerAtual()
+        } catch (_: Exception) {
+            null
+        }
+        if (amostra == null) {
+            _estado.value = _estado.value.copy(
+                amostra = null,
+                avaliacao = null,
+                resultado = null,
+                indisponivel = true,
+            )
+            return@synchronized
+        }
+
+        val avaliacao = detector.avaliar(amostra.temperaturaBateria)
+        registrar(amostra, avaliacao)
+    }
+
+    /**
+     * Repete a última amostra com a temperatura 6 °C acima da última leitura normal, para
+     * demonstrar o detector e o classificador sem esquentar o aparelho.
+     */
+    fun simularPico() = synchronized(trava) {
+        val estadoAtual = _estado.value
+        val amostraBase = estadoAtual.amostra ?: return@synchronized
+        val leituraBase = estadoAtual.historico.lastOrNull {
+            it.status == StatusLeitura.NORMAL
+        } ?: estadoAtual.avaliacao ?: return@synchronized
+        val amostraSimulada = amostraBase.copy(
+            temperaturaBateria = Temperatura.deCelsius(
+                leituraBase.temperatura.celsius + AUMENTO_SIMULACAO_CELSIUS,
+            ),
+        )
+        registrar(amostraSimulada, detector.avaliar(amostraSimulada.temperaturaBateria))
+    }
+
+    private fun registrar(amostra: AmostraTelemetria, avaliacao: Avaliacao) {
+        val resultado = classificador.classificar(amostra, avaliacao)
+        val historico = (_estado.value.historico + avaliacao).takeLast(LIMITE_HISTORICO)
+        _estado.value = _estado.value.copy(
+            amostra = amostra,
+            avaliacao = avaliacao,
+            resultado = resultado,
+            historico = historico,
+            indisponivel = false,
+        )
+    }
+
+    private companion object {
+        const val INTERVALO_AMOSTRAGEM_MS = 5_000L
+        const val LIMITE_HISTORICO = 60
+        const val AUMENTO_SIMULACAO_CELSIUS = 6.0
+    }
+}

@@ -130,7 +130,8 @@ fun GraficoTemperatura(
     }
 }
 
-private fun coordenadaX(indice: Int, quantidade: Int, largura: Float): Float =
+/** Posição horizontal da leitura; também usada pelo GraficoRazaoFrequencia. */
+internal fun coordenadaX(indice: Int, quantidade: Int, largura: Float): Float =
     if (quantidade <= 1) largura / 2f else largura * indice / (quantidade - 1)
 
 private const val LIMITE_LEITURAS = 60

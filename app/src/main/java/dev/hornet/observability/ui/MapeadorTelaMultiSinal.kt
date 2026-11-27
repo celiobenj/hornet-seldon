@@ -20,6 +20,7 @@ fun mapearParaTela(estado: TelemetriaUiState): EstadoTelaMultiSinal {
             } else {
                 "Aguardando a primeira leitura."
             },
+            simulacao = estado.simulacao,
         )
     }
 
@@ -32,6 +33,7 @@ fun mapearParaTela(estado: TelemetriaUiState): EstadoTelaMultiSinal {
         statusTermico = amostra.statusTermicoValido()?.let(::nomeStatusTermico),
         estado = estadoDaTela(resultado.estado),
         motivo = resultado.motivo,
+        simulacao = estado.simulacao,
     )
 }
 

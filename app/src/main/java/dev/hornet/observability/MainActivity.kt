@@ -82,6 +82,8 @@ private fun TelaPrincipal(modifier: Modifier = Modifier) {
         onSimularPico = viewModel::simularPico,
         onGerarCarga = viewModel::gerarCarga,
         onPararCarga = viewModel::pararCarga,
+        onIniciarDemonstracao = viewModel::iniciarDemonstracao,
+        onPararDemonstracao = viewModel::pararDemonstracao,
         modifier = modifier,
     )
 }
@@ -93,6 +95,8 @@ private fun ConteudoPrincipal(
     onSimularPico: () -> Unit,
     onGerarCarga: () -> Unit,
     onPararCarga: () -> Unit,
+    onIniciarDemonstracao: () -> Unit,
+    onPararDemonstracao: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val estadoTela = remember(estado) { mapearParaTela(estado) }
@@ -130,6 +134,21 @@ private fun ConteudoPrincipal(
                     )
                 }
             }
+            if (estado.simulacao) {
+                OutlinedButton(onClick = onPararDemonstracao) {
+                    Text(
+                        text = "Sair do modo demonstração",
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
+            } else {
+                Button(onClick = onIniciarDemonstracao) {
+                    Text(
+                        text = "Modo demonstração",
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
+            }
         },
     )
 }
@@ -160,6 +179,8 @@ private fun ConteudoPrincipalPreview() {
             onSimularPico = {},
             onGerarCarga = {},
             onPararCarga = {},
+            onIniciarDemonstracao = {},
+            onPararDemonstracao = {},
         )
     }
 }

@@ -12,10 +12,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import dev.hornet.observability.core.Avaliacao
 import dev.hornet.observability.core.StatusLeitura
 import dev.hornet.observability.core.Temperatura
+import dev.hornet.observability.ui.theme.HornetDesafio01Theme
 
 /**
  * Tela da v2: um card por sinal, o destaque do estado do throttling e o gráfico de temperatura.
@@ -48,6 +51,9 @@ fun TelaMultiSinal(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        if (estado.simulacao) {
+            FaixaSimulacao()
+        }
         DestaqueEstado(estado = estado.estado, motivo = estado.motivo)
         CardSinal(
             titulo = "Temperatura da bateria",
@@ -57,6 +63,8 @@ fun TelaMultiSinal(
         CardSinal(
             titulo = "Uso da CPU",
             valor = estado.usoCpuPercentual?.let { "${"%.0f".format(it)} %" } ?: INDISPONIVEL,
+            // Sem acesso ao uso do sistema, o adaptador mede só este app (docs/validacao/uso-cpu.md).
+            observacao = "Em muitos aparelhos, mede só o uso deste app.",
         )
         CardSinal(
             titulo = "Status térmico do Android",
@@ -82,6 +90,33 @@ fun TelaMultiSinal(
             modifier = Modifier.fillMaxWidth(),
         )
         acoes()
+    }
+}
+
+/** Faixa no topo da tela que deixa claro que os dados são simulados. */
+@Composable
+private fun FaixaSimulacao() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clearAndSetSemantics {
+                contentDescription = "Simulação. Os dados vêm do modo demonstração, não do aparelho."
+            },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        ),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Text(
+                text = "Simulação",
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Text(
+                text = "Modo demonstração: dados roteirizados, não lidos do aparelho.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }
 
@@ -119,7 +154,7 @@ private fun DestaqueEstado(estado: EstadoThrottlingTela, motivo: String) {
 }
 
 @Composable
-private fun CardSinal(titulo: String, valor: String) {
+private fun CardSinal(titulo: String, valor: String, observacao: String? = null) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -130,6 +165,12 @@ private fun CardSinal(titulo: String, valor: String) {
                 text = valor,
                 style = MaterialTheme.typography.headlineSmall,
             )
+            if (observacao != null) {
+                Text(
+                    text = observacao,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
     }
 }
@@ -171,7 +212,7 @@ private fun CardFrequencia(estado: EstadoTelaMultiSinal) {
                 )
             } else {
                 Text(
-                    text = "Razão da frequência $INDISPONIVEL",
+                    text = "Percentual do máximo $INDISPONIVEL",
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -195,17 +236,35 @@ internal fun descricaoEstado(estado: EstadoThrottlingTela, motivo: String): Stri
     }
 }
 
-private fun corEstado(estado: EstadoThrottlingTela): Color = when (estado) {
-    EstadoThrottlingTela.NORMAL -> Color(0xFF2E7D32)
-    EstadoThrottlingTela.AQUECENDO -> Color(0xFFB26A00)
-    EstadoThrottlingTela.THROTTLING_PROVAVEL -> Color(0xFFD84315)
-    EstadoThrottlingTela.THROTTLING_CONFIRMADO -> Color(0xFFC62828)
-    EstadoThrottlingTela.DADOS_INSUFICIENTES -> Color(0xFF616161)
+/**
+ * Cor do estado. No modo escuro usa tons claros, porque os tons escuros do modo claro
+ * ficam com pouco contraste sobre fundo escuro.
+ */
+@Composable
+private fun corEstado(estado: EstadoThrottlingTela): Color {
+    val escuro = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    return if (escuro) {
+        when (estado) {
+            EstadoThrottlingTela.NORMAL -> Color(0xFF81C784)
+            EstadoThrottlingTela.AQUECENDO -> Color(0xFFFFB74D)
+            EstadoThrottlingTela.THROTTLING_PROVAVEL -> Color(0xFFFF8A65)
+            EstadoThrottlingTela.THROTTLING_CONFIRMADO -> Color(0xFFEF9A9A)
+            EstadoThrottlingTela.DADOS_INSUFICIENTES -> Color(0xFFBDBDBD)
+        }
+    } else {
+        when (estado) {
+            EstadoThrottlingTela.NORMAL -> Color(0xFF2E7D32)
+            EstadoThrottlingTela.AQUECENDO -> Color(0xFF8A5300)
+            EstadoThrottlingTela.THROTTLING_PROVAVEL -> Color(0xFFBF360C)
+            EstadoThrottlingTela.THROTTLING_CONFIRMADO -> Color(0xFFC62828)
+            EstadoThrottlingTela.DADOS_INSUFICIENTES -> Color(0xFF616161)
+        }
+    }
 }
 
 private const val INDISPONIVEL = "indisponível"
 
-// Dados falsos para as previews. A E2 troca por telemetria real.
+// Dados falsos, usados só nas previews.
 
 private fun historicoFalso(vararg celsius: Double): List<Avaliacao> =
     celsius.map { valor ->
@@ -317,5 +376,46 @@ private fun TelaMultiSinalSinaisIndisponiveisPreview() {
             motivo = "Uso da CPU e status térmico indisponíveis neste aparelho.",
         ),
         historico = HISTORICO_FRIO,
+    )
+}
+
+@Preview(showBackground = true, heightDp = 1000, backgroundColor = 0xFF121212)
+@Composable
+private fun TelaMultiSinalModoEscuroPreview() {
+    HornetDesafio01Theme(darkTheme = true, dynamicColor = false) {
+        Surface {
+            TelaMultiSinal(
+                estado = EstadoTelaMultiSinal(
+                    temperaturaTexto = "38,3 °C",
+                    frequenciaAtualMhz = 1380,
+                    frequenciaMaximaMhz = 2000,
+                    razaoFrequencia = 0.69,
+                    usoCpuPercentual = 85.0,
+                    statusTermico = "Nenhum (0)",
+                    estado = EstadoThrottlingTela.THROTTLING_PROVAVEL,
+                    motivo = "CPU com uso de 85 % em 69 % da frequência máxima e bateria a 38,3 °C.",
+                ),
+                historico = HISTORICO_QUENTE.dropLast(2),
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, heightDp = 1100)
+@Composable
+private fun TelaMultiSinalSimulacaoPreview() {
+    TelaMultiSinal(
+        estado = EstadoTelaMultiSinal(
+            temperaturaTexto = "41,0 °C",
+            frequenciaAtualMhz = 1200,
+            frequenciaMaximaMhz = 2000,
+            razaoFrequencia = 0.6,
+            usoCpuPercentual = 90.0,
+            statusTermico = "Moderado (2)",
+            estado = EstadoThrottlingTela.THROTTLING_CONFIRMADO,
+            motivo = "O Android reportou nível térmico 2.",
+            simulacao = true,
+        ),
+        historico = HISTORICO_QUENTE,
     )
 }

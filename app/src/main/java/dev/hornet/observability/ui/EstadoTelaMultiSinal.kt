@@ -23,6 +23,8 @@ enum class EstadoThrottlingTela {
  * essa faixa, mas mostra o valor recebido no texto.
  *
  * statusTermico é o nome do nível térmico do Android, por exemplo "Moderado (2)".
+ *
+ * simulacao indica dados roteirizados do modo demonstração; a tela mostra o rótulo "Simulação".
  */
 data class EstadoTelaMultiSinal(
     val temperaturaTexto: String? = null,
@@ -33,4 +35,5 @@ data class EstadoTelaMultiSinal(
     val statusTermico: String? = null,
     val estado: EstadoThrottlingTela = EstadoThrottlingTela.DADOS_INSUFICIENTES,
     val motivo: String = "",
+    val simulacao: Boolean = false,
 )

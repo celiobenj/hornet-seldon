@@ -11,6 +11,7 @@ import dev.hornet.observability.core.StatusLeitura
 import dev.hornet.observability.core.Temperatura
 import dev.hornet.observability.core.TelemetriaSource
 import dev.hornet.observability.core.ThrottlingClassifier
+import dev.hornet.observability.demonstracao.FonteDemonstracao
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,17 +31,23 @@ data class TelemetriaUiState(
     val historico: List<Avaliacao> = emptyList(),
     val historicoRazaoFrequencia: List<Double?> = emptyList(),
     val indisponivel: Boolean = false,
+    /** Verdadeiro no modo demonstração: os dados são roteirizados, não lidos do aparelho. */
+    val simulacao: Boolean = false,
 )
 
 /**
  * A cada 5 segundos: lê a amostra, avalia a temperatura com o detector, classifica a amostra
  * e publica o resultado. A leitura roda em thread de IO para não travar a tela.
+ *
+ * No modo demonstração, a fonte real é trocada por uma fonte roteirizada. O estado vive no
+ * ViewModel, então girar a tela não perde o histórico, a carga nem o modo demonstração.
  */
 class TelemetriaViewModel(
     private val fonte: TelemetriaSource,
     private val detector: AnomalyDetector,
     private val classificador: ThrottlingClassifier,
     private val despachanteIo: CoroutineDispatcher = Dispatchers.IO,
+    private val criarFonteDemonstracao: () -> TelemetriaSource = { FonteDemonstracao() },
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(TelemetriaUiState())
@@ -49,6 +56,32 @@ class TelemetriaViewModel(
     // O detector guarda a janela de leituras, então só uma thread pode usá-lo por vez.
     private val trava = Any()
     private var tarefaAmostragem: Job? = null
+
+    // Fonte do modo demonstração; null quando a fonte real está em uso.
+    private var fonteDemonstracao: TelemetriaSource? = null
+
+    /**
+     * Liga o modo demonstração: zera o detector e os históricos, para os dados simulados não se
+     * misturarem com os reais, e já mostra a primeira amostra do roteiro.
+     */
+    fun iniciarDemonstracao() = synchronized(trava) {
+        if (fonteDemonstracao != null) return@synchronized
+        fonteDemonstracao = criarFonteDemonstracao()
+        recomecar(simulacao = true)
+        amostrar()
+    }
+
+    /** Volta à fonte real, também com detector e históricos zerados. */
+    fun pararDemonstracao() = synchronized(trava) {
+        if (fonteDemonstracao == null) return@synchronized
+        fonteDemonstracao = null
+        recomecar(simulacao = false)
+    }
+
+    private fun recomecar(simulacao: Boolean) {
+        detector.reiniciar()
+        _estado.value = TelemetriaUiState(simulacao = simulacao)
+    }
 
     // Criado só quando usado. Como vive no viewModelScope, a carga para se o ViewModel for encerrado.
     private val gerador by lazy { GeradorDeCarga(viewModelScope) }
@@ -74,7 +107,7 @@ class TelemetriaViewModel(
     /** Faz um ciclo completo: ler, avaliar, classificar e publicar. */
     fun amostrar() = synchronized(trava) {
         val amostra = try {
-            fonte.lerAtual()
+            (fonteDemonstracao ?: fonte).lerAtual()
         } catch (_: Exception) {
             null
         }

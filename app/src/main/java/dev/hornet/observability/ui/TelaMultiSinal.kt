@@ -51,6 +51,9 @@ fun TelaMultiSinal(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        if (estado.simulacao) {
+            FaixaSimulacao()
+        }
         DestaqueEstado(estado = estado.estado, motivo = estado.motivo)
         CardSinal(
             titulo = "Temperatura da bateria",
@@ -87,6 +90,33 @@ fun TelaMultiSinal(
             modifier = Modifier.fillMaxWidth(),
         )
         acoes()
+    }
+}
+
+/** Faixa no topo da tela que deixa claro que os dados são simulados. */
+@Composable
+private fun FaixaSimulacao() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clearAndSetSemantics {
+                contentDescription = "Simulação. Os dados vêm do modo demonstração, não do aparelho."
+            },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        ),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Text(
+                text = "Simulação",
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Text(
+                text = "Modo demonstração: dados roteirizados, não lidos do aparelho.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }
 
@@ -369,4 +399,23 @@ private fun TelaMultiSinalModoEscuroPreview() {
             )
         }
     }
+}
+
+@Preview(showBackground = true, heightDp = 1100)
+@Composable
+private fun TelaMultiSinalSimulacaoPreview() {
+    TelaMultiSinal(
+        estado = EstadoTelaMultiSinal(
+            temperaturaTexto = "41,0 °C",
+            frequenciaAtualMhz = 1200,
+            frequenciaMaximaMhz = 2000,
+            razaoFrequencia = 0.6,
+            usoCpuPercentual = 90.0,
+            statusTermico = "Moderado (2)",
+            estado = EstadoThrottlingTela.THROTTLING_CONFIRMADO,
+            motivo = "O Android reportou nível térmico 2.",
+            simulacao = true,
+        ),
+        historico = HISTORICO_QUENTE,
+    )
 }

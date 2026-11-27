@@ -26,11 +26,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.hornet.observability.core.AmostraTelemetria
 import dev.hornet.observability.core.Avaliacao
 import dev.hornet.observability.core.BaselineDetector
+import dev.hornet.observability.core.ClassificadorThrottling
 import dev.hornet.observability.core.EstadoThrottling
 import dev.hornet.observability.core.ResultadoThrottling
 import dev.hornet.observability.core.StatusLeitura
 import dev.hornet.observability.core.Temperatura
-import dev.hornet.observability.core.ThrottlingClassifier
 import dev.hornet.observability.data.TelemetriaAndroidSource
 import dev.hornet.observability.ui.TelaMultiSinal
 import dev.hornet.observability.ui.TelemetriaUiState
@@ -52,21 +52,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/**
- * Classificador provisório, usado até o ClassificadorThrottling (issue B2, #38) chegar ao develop.
- * Sempre responde INDETERMINADO, então a tela mostra "Dados insuficientes" com este motivo.
- * Para ligar o real, troque ClassificadorPendente por ClassificadorThrottling() na fábrica abaixo.
- */
-private object ClassificadorPendente : ThrottlingClassifier {
-    override fun classificar(
-        amostra: AmostraTelemetria,
-        avaliacaoTemperatura: Avaliacao,
-    ): ResultadoThrottling = ResultadoThrottling(
-        estado = EstadoThrottling.INDETERMINADO,
-        motivo = "Classificador de throttling ainda não integrado.",
-    )
-}
-
 @Composable
 private fun TelaPrincipal(modifier: Modifier = Modifier) {
     val contexto = LocalContext.current.applicationContext
@@ -78,7 +63,7 @@ private fun TelaPrincipal(modifier: Modifier = Modifier) {
                 return TelemetriaViewModel(
                     fonte = TelemetriaAndroidSource.deContexto(contexto),
                     detector = BaselineDetector(),
-                    classificador = ClassificadorPendente,
+                    classificador = ClassificadorThrottling(),
                 ) as T
             }
         }
